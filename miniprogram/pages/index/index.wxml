@@ -1,0 +1,137 @@
+<view class="container">
+
+<!-- 画布 -->
+<!-- <canvas id="canvas" type="2d"></canvas> -->
+
+<!-- 调节框 -->
+<view class="adjust"> 
+  <button class="button add" bindtap="addsizerate"></button>
+  <view>{{sizerate}}</view>
+  <button class="button sub" bindtap="subsizerate"></button>
+</view>
+
+<!-- 画布 -->
+<view class="canvas" bindtouchmove="touchmove" bindtouchstart="touchstart" bindtouchend="touchend">
+  <view class="map">
+    <block wx:for="{{pitspositions}}">
+      <view class="pit" style="top:{{50 + (item.y * pitsinterval - offsety) * sizerate}}rpx;left:{{50 + (item.x * pitsinterval - offsetx) * sizerate}}rpx;line-height:{{pitswidth * sizerate}}rpx;height:{{pitswidth * sizerate}}rpx;width:{{pitswidth * sizerate}}rpx">{{index + 1}}</view>
+    </block>
+    <!-- <view class="border" style="border:10rpx solid;position:absolute;top：30rpx;left30rpx;height:{{sizerate * pitsinterval * 9}}rpx;width:{{sizerate * pitsinterval * 7}}rpx"></view> -->
+  </view>
+  <view class="vehicle">
+
+  </view>
+</view>
+
+<!-- 图例 -->
+<view class="icons" style="bottom:{{onselect ? '40vh' : '2vh'}}">
+  <view class="title">图例</view>
+  <view class="legends-container">
+    <block wx:for="{{legends}}">
+      <view class="legend">
+        <image src="{{item.img}}"/>
+        <view>{{item.name}}</view>
+      </view>
+    </block>
+ </view>
+</view>
+
+<!-- 页面缩略图 -->
+<view class="shorts" hidden="{{onshade || onselect}}">
+  <!-- 缩略图 -->
+  <block wx:for="{{pages}}">
+    <view 
+      hidden="{{item.value != currpage}}" 
+      class="short {{item.class}}"
+      bindtap="tapshort"
+      data-value="{{item.value}}"
+    >{{item.name}}</view>
+  </block>
+</view>
+
+<!-- 遮罩层 -->
+<view class="shade" hidden="{{!onshade}}">
+  <view class="container">
+    <view class="hidebar" bindtap="hideshade">
+      <image src="../imgs/hide-icon.png"/>
+    </view>
+    <!-- 排队页面 -->
+    <view class="window window-queuing" hidden="{{currpage != 'queuing'}}">排队页面
+      <view class="title">排队中....</view>
+      <view class="note">目前叫的车有点多呢，请您耐心等待哦~</view>
+      <progress stroke-width="30rpx" border-radius="10rpx" percent="{{100 - queue.curr / queue.total * 100}}" active="ture" active-mode="forwards" duration="50"></progress>
+      <view class="count">{{queue.curr}}/{{queue.total}}</view>
+      <button bindtap="cancelQueue">取消</button>
+    </view>
+    <!-- 调度页面 -->
+    <view class="window window-scheduling" hidden="{{currpage != 'scheduling'}}">
+      <view class="title">调度中....</view>
+      <view class="note note1">您呼叫的小车正在火速赶来~</view>
+      <progress stroke-width="30rpx" border-radius="10rpx" percent="{{scheduling.curr}}"
+        active="true" active-mode="forwards" duration="50"
+      ></progress>
+      <view class="note note2">xx号车正在向您火速赶来，大概据您xx米，预计xx分钟后到达，请您耐心等待哦~</view>
+    </view>
+    <!-- 工作页面 -->
+    <view class="window window-working" hidden="{{currpage != 'working'}}">
+      <view class="title">工作中....</view>
+      <view class="note note1">您呼叫的小车来咯！</view>
+      <view class="info info1">车辆信息</view>
+      <view class="info info2">编号：三号车</view>
+      <view class="info info3">土质：{{soilResult.options[soilIndex]}}</view>
+      <view class="info info4">位置：{{positionResult.options[positionIndex]}}</view>
+      <button bindtap="unload">倒土</button>
+    </view>
+  </view>
+</view>
+
+<!-- 叫车框 -->
+<view class="select" hidden="{{currpage != 'selecting' || !onselect}}">
+  <view class="hidebar" bindtap="hideselectform">
+      <image src="../imgs/hide-icon.png"/>
+  </view>
+
+  <view class="container">
+    <picker 
+      mode="selector"
+      class="picker picker-position" 
+      range="{{positionResult.options}}"
+      bindchange="pickPosition"
+      >
+      <view>{{positionResult.options[positionIndex]}}</view>
+    </picker>
+    <picker 
+      mode="selector"
+      class="picker picker-soil"
+      bindchange="pickSoil"
+      range="{{soilResult.options}}"
+    >
+      <view>{{soilResult.options[soilIndex]}}</view>
+    </picker>
+    <button bindtap="queue">确认叫车</button>
+  </view>
+</view>
+
+<!-- tcp连接情况 -->
+  <view class="tcpConn" bindtap="tcpSetData">
+    <view class="tip" style="background-color:{{tcpConnection.tipColor}}"></view>
+    <view class="note">{{tcpConnection.note}}</view>
+  </view>
+<!-- socket信息框 -->
+  <view class="shade" hidden="{{!tcpConnection.isSelecting}}">
+    <view class="tcpinfo">
+      <view class="title">socket地址:</view>
+      <view class="inputview ipaddress">
+        <label>ip地址:</label><input type="text" value="{{tcpConnection.targetIP}}" bindinput="tcpTargetIpInput"/>
+      </view>
+      <view class="inputview port">
+        <label>端口号:</label>
+        <input type="number" value="{{tcpConnection.targetPort}}" bindinput="tcpTargetPortInput"/>
+      </view>
+      <button class="btn-cancel" bindtap="tcpCancel">取消</button>
+      <button class="btn-connect" bindtap="tcpConnect">连接</button>
+    </view>
+  </view>
+
+  
+</view>
