@@ -140,7 +140,7 @@
     >
       <view>{{soilResult.options[soilIndex]}}</view>
     </picker>
-    <button bindtap="queue">确认叫车</button>
+    <button type="primary" bindtap="submitSelection">确认叫车</button>
   </view>
 </view>
 

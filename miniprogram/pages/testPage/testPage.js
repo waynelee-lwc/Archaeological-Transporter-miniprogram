@@ -108,7 +108,7 @@ Page({
       },
       tipColor:'red',
       note:'未连接',
-      targetIP:'192.168.43.42',
+      targetIP:'192.168.0.12',
       targetPort:3000,
       isSelecting:false,
       socket:null,         //tcpsocket对象
@@ -175,6 +175,19 @@ Page({
       this.showshade(type);
     }
   },
+  submitSelection:function(){//提交呼叫
+    let socket = this.data.tcpConnection.socket;
+
+    let x = this.data.targetPoint.realx;
+    let y = this.data.targetPoint.realy;
+    console.log('submit selection',x,y);
+
+    socket.write('1;' + x + ';' + y);
+    wx.showToast({
+      title: '发送成功',
+    })
+
+  },
   unload:function(){//倒土
     this.setData({
       onshade : false,
@@ -212,6 +225,8 @@ Page({
       
   },
   scheduling:function(){//调度
+
+    //更新状态&页面
     this.setData({
       scheduling:{
         curr:0
@@ -221,17 +236,17 @@ Page({
       onselect:false
     })
 
-    let id = setInterval(() => {
-      this.setData({
-        scheduling:{
-          curr : this.data.scheduling.curr + 1
-        }
-      })
-      if(this.data.scheduling.curr > 100){
-        clearInterval(id);
-        this.work();
-      }
-    }, 50);
+    // let id = setInterval(() => {
+    //   this.setData({
+    //     scheduling:{
+    //       curr : this.data.scheduling.curr + 1
+    //     }
+    //   })
+    //   if(this.data.scheduling.curr > 100){
+    //     clearInterval(id);
+    //     this.work();
+    //   }
+    // }, 50);
   },
   work:function(){//工作
     this.setData({
@@ -410,7 +425,6 @@ Page({
 
     //接受服务端传递信息
     socket.onMessage((res)=>{
-      console.log(res.message);
       let buffer = res.message
       var dataview = new DataView(buffer);
       var ints = new Uint8Array(buffer.byteLength);
@@ -419,6 +433,7 @@ Page({
         str += String.fromCharCode(dataview.getUint8(i));
       }
 
+      console.log(str);
       // wx.showToast({
       //   title: str,
       // })
@@ -465,6 +480,9 @@ Page({
     return this.data.tcpConnection.note == '已连接'
   },
   setVehiclePosition(x,y){//更新地图中载具位置
+
+    x = Number(x).toFixed(2);
+    y = Number(y).toFixed(2);
     this.setData({
       'vehicle.position':{
         x:x,
