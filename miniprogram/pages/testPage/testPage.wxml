@@ -2,7 +2,7 @@
 
 <!-- 版本标签 -->
 <view class="version-tag">
-  测试版  V1.1
+  测试版  V1.6
 </view>
 
 <!-- 画布 -->
@@ -60,7 +60,7 @@
 
 
 <!-- 图例 -->
-<view class="icons" style="bottom:{{onselect ? '40vh' : '2vh'}}">
+<view class="icons" style="bottom:{{onselect ? '46vh' : '2vh'}}">
   <view class="title">图例</view>
   <view class="legends-container">
     <block wx:for="{{legends}}">
@@ -128,17 +128,39 @@
   </view>
 
   <view class="container">
+  <!-- 目标点坐标选择 -->
     <view class="target-pos">
       <input type="number" value="{{targetPoint.realx}}" id="target-x" bindinput="changeTarget"  />
       <input type="number" value="{{targetPoint.realy}}" id="target-y" bindinput="changeTarget"/>
     </view>
+
+  <!-- 载具选择 -->
+    <picker 
+      mode="selector"
+      class="picker picker-vehicle"
+      bindchange="pickVehicle"
+      range="{{vehicleResult.options}}"
+    >
+      <view>载具：{{vehicleResult.options[vehicleIndex]}}</view>
+    </picker>
+
+  <!-- 坑位选择 -->
+    <picker 
+      mode="selector"
+      class="picker picker-position"
+      bindchange="pickPosition"
+      range="{{positionResult.options}}"
+    >
+      <view>坑位：{{positionResult.options[positionIndex]}}</view>
+    </picker>
+    <!-- 土壤类型选择 -->
     <picker 
       mode="selector"
       class="picker picker-soil"
       bindchange="pickSoil"
       range="{{soilResult.options}}"
     >
-      <view>{{soilResult.options[soilIndex]}}</view>
+      <view>土壤：{{soilResult.options[soilIndex]}}</view>
     </picker>
     <button type="primary" bindtap="submitSelection">确认叫车</button>
   </view>

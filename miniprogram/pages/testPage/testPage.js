@@ -26,13 +26,25 @@ Page({
       value:'working',
       class:'short-working'
     }],
-    positionResult:{
-      options:['一号坑','二号坑','三号坑','四号坑','五号坑'],
-      values:[1,2,3,4,5]
+    positionResult:{//坑位选择
+      options:['1号坑','2号坑','3号坑','4号坑','5号坑',
+      '6号坑','7号坑','8号坑','9号坑','10号坑',
+      '11号坑','12号坑','13号坑','14号坑','15号坑',
+      '16号坑','17号坑','18号坑','19号坑','20号坑',
+      '21号坑','22号坑','23号坑','24号坑','25号坑',],
+      values:[1,2,3,4,5,
+      6,7,8,9,10,
+      11,12,13,14,15,
+      16,17,18,19,20,
+      21,22,23,24,25,]
     },
-    soilResult:{
+    soilResult:{//土壤类型选择
       options:['土壤一','土壤二','土壤三','土壤四','土壤五'],
       values:[1,2,3,4,5]
+    },
+    vehicleResult:{//载具选择
+      options:['1号车'],
+      values:[1]
     },
     queue:{             //排队信息
       curr:15,
@@ -42,8 +54,9 @@ Page({
       curr:0
     },
     intervalId:null,    
-    positionIndex:0,
-    soilIndex:0,
+    positionIndex:0,    //位置选择下标
+    soilIndex:0,        //土壤类型选择下标
+    vehicleIndex:0,     //载具选择下标
     legends:[{
       img:'../imgs/legend-scheduling.png',
       name:'调度'
@@ -176,13 +189,38 @@ Page({
     }
   },
   submitSelection:function(){//提交呼叫
+
+    if(!this.isTcpConnected()){
+      wx.showToast({
+        title: '请先建立tcp连接！',
+        icon:'error'
+      })
+      return;
+    }
+
     let socket = this.data.tcpConnection.socket;
 
+    /**目标坐标 */
     let x = this.data.targetPoint.realx;
     let y = this.data.targetPoint.realy;
+
+    /**目标坑位 */
+    let pit = this.data.positionResult.values[this.data.positionIndex];
+
+    /**载具 */
+    let vehicle = this.data.vehicleResult.values[this.data.vehicleIndex]
+
+    /**土壤类型 */
+    let soil = this.data.soilResult.values[this.data.soilIndex];
+
     console.log('submit selection',x,y);
 
-    socket.write('1;' + x + ';' + y);
+    /**
+     * 发送消息1
+     * x;y;载具;坑位;土壤类型
+     */
+    socket.write('1;' + x + ';' + y + ';' + vehicle + ';' + pit + ';' + soil);
+
     wx.showToast({
       title: '发送成功',
     })
@@ -263,7 +301,7 @@ Page({
     })
     clearInterval(this.data.intervalId);
   },
-  pickPosition:function(e){
+  pickPosition:function(e){ //选取目标坑位
     let index = e.detail.value;
     this.setData({
       positionIndex:index
@@ -273,6 +311,12 @@ Page({
     let index = e.detail.value;
     this.setData({
       soilIndex:index
+    })
+  },
+  pickVehicle:function(e){//选取载具
+    let index = e.detail.value;
+    this.setData({
+      vehicleIndex:index
     })
   },
   touchmove:function(e){//触摸移动地图
@@ -326,11 +370,13 @@ Page({
 
     // this.log('tap',x.toFixed(2),y);
 
-    let rx = ((x + this.data.offsetx - this.data.basex * this.data.sizerate) / this.data.sizerate).toFixed(2);
-    let ry = ((y + this.data.offsety - this.data.basey * this.data.sizerate) / this.data.sizerate).toFixed(2);
+    let rx = ((x + this.data.offsetx - this.data.basex * this.data.sizerate) / this.data.sizerate).toFixed(0);
+    let ry = ((y + this.data.offsety - this.data.basey * this.data.sizerate) / this.data.sizerate).toFixed(0);
     
-    rx = Math.min(this.data.flagPitIntervalx * 2 + this.data.pitsinterval * 5,Math.max(0,rx));
-    ry = Math.min(this.data.flagPitIntervaly * 2 + this.data.pitsinterval * 5,Math.max(0,ry));
+   let temp = this.checkTarget(rx,ry);
+   rx = temp[0];
+   ry = temp[1];
+   
 
     this.setData({
       'targetPoint.x':x,
@@ -340,22 +386,73 @@ Page({
     })
 
   },
+  checkTarget:function(rx,ry){//校验目标坐标，不能超界且不能位于土坑内
+
+    /**判断目标点是否在界限内 */
+    rx = Math.max(0,rx);
+    ry = Math.max(0,ry);
+    rx = Math.min(this.data.flagPitIntervalx * 2 + this.data.pitsinterval * 5,rx);
+    ry = Math.min(this.data.flagPitIntervaly * 2 + this.data.pitsinterval * 5,ry);
+
+     /**
+     * 判断目标点是否在土坑内
+     * 是则需要纠正，转移到就近过道上
+     */
+    for(let i = 0,plx,ply,prx,pry;i < this.data.pitspositions.length;i++){
+      plx = this.data.pitspositions[i].x;
+      ply = this.data.pitspositions[i].y;
+
+      /**分别计算该土坑的左上和右下顶点 */
+      plx = this.data.flagPitIntervalx + this.data.pitsinterval * plx;
+      ply = this.data.flagPitIntervaly + this.data.pitsinterval * ply;
+
+      prx = plx + this.data.pitswidth;
+      pry = ply + this.data.pitswidth;
+
+      /**判断点是否在土坑内，是则修正到就近边*/
+      if(rx > plx && rx < prx && ry > ply && ry < pry){
+        let dx = Math.min(rx - plx,prx - rx);
+        let dy = Math.min(ry - ply,pry - ry);
+
+        if(dx < dy){
+          rx = rx - plx < prx - rx ? plx : prx;
+        }else{
+          ry = ry - ply < pry - ry ? ply : pry;
+        }
+
+        rx = rx.toFixed(0);
+        ry = ry.toFixed(0);
+        break;
+      }
+
+    }
+
+    return [rx,ry];
+  },
   changeTarget(e){  //输入框更改定位信息
     // console.log(e);
     let id = e.target.id;
     let value = Number(e.detail.value);
     
+    let rx = this.data.targetPoint.realx;
+    let ry = this.data.targetPoint.realy;
+
     if(id == 'target-x'){
       value = Math.min(this.data.flagPitIntervalx * 2 + this.data.pitsinterval * 5,Math.max(0,value));
-      this.setData({
-        'targetPoint.realx':value
-      })
+      rx = value;
     }else{
       value = Math.min(this.data.flagPitIntervaly * 2 + this.data.pitsinterval * 5,Math.max(0,value));
-      this.setData({
-        'targetPoint.realy':value
-      })
+      ry = value;
     }
+
+    let temp = this.checkTarget(rx,ry);
+    rx = temp[0];
+    ry = temp[1];
+
+    this.setData({
+      'targetPoint.realx':rx,
+      'targetPoint.realy':ry
+    })
   },
   addsizerate:function(){ //增加地图缩放比例
 
@@ -477,12 +574,12 @@ Page({
     })
   },
   isTcpConnected(){       //询问tcp是否已连接
-    return this.data.tcpConnection.note == '已连接'
+    return this.data.tcpConnection.note == '已连接' || this.data.tcpConnection == '连接中'
   },
   setVehiclePosition(x,y){//更新地图中载具位置
 
-    x = Number(x).toFixed(2);
-    y = Number(y).toFixed(2);
+    x = Number(x).toFixed(0);
+    y = Number(y).toFixed(0);
     this.setData({
       'vehicle.position':{
         x:x,

@@ -75,7 +75,7 @@
 }
 
 .select{
-  height: 38vh;
+  height: 45vh;
   width: 100%;
   position: absolute;
   bottom: 0rpx;
@@ -178,14 +178,21 @@
   position: absolute;
   height: 8vh;
   width: 80%;
+  display: flex;
+  justify-content: space-around;
 }
-
+.select>.container>.picker-vehicle{
+  top:12vh;
+}
 .select>.container>.picker-position{
-  top: 4vh;
+  top: 18vh;
+}
+.select>.container>.picker-soil{
+  top:24vh;
 }
 
-.select>.container>.picker-soil{
-  top:14vh;
+.select>.container>.picker label{
+  
 }
 
 .select>.container>.picker view{
@@ -195,8 +202,9 @@
   line-height: 6vh;
   font-size: 32rpx;
   font-weight: bold;
-  width: 400rpx;
+  width: 340rpx;
   margin: auto;
+  display: inline-block;
 }
 
 .select>.container>button{
