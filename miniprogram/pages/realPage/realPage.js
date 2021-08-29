@@ -491,7 +491,7 @@ Page({
     ofx /= this.data.sizerate;
     ofy /= this.data.sizerate;
 
-    let sizerate = Math.min(this.data.sizeratemax,this.data.sizerate - 0.25);
+    let sizerate = Math.max(this.data.sizeraetmin,this.data.sizerate - 0.25);
 
     ofx *= sizerate;
     ofy *= sizerate;
