@@ -75,7 +75,7 @@
 }
 
 .select{
-  height: 38vh;
+  height: 45vh;
   width: 100%;
   position: absolute;
   bottom: 0rpx;
@@ -100,6 +100,24 @@
   /* display: flex;
   flex-direction: column;
   justify-content: space-around; */
+}
+
+.select>.container>.target-pos{
+  position: absolute;
+  /* border: 1px solid; */
+  top: 5vh;
+  width: 320rpx;
+  display: flex;
+  justify-content: space-between;
+}
+
+.select>.container>.target-pos>input{
+  border: 4rpx inset;
+  width: 140rpx;
+  height: 6vh;
+  line-height: 6vh;
+  font-weight: bold;
+  text-align: center;
 }
 
 .icons{
@@ -160,14 +178,21 @@
   position: absolute;
   height: 8vh;
   width: 80%;
+  display: flex;
+  justify-content: space-around;
 }
-
+.select>.container>.picker-vehicle{
+  top:12vh;
+}
 .select>.container>.picker-position{
-  top: 4vh;
+  top: 18vh;
+}
+.select>.container>.picker-soil{
+  top:24vh;
 }
 
-.select>.container>.picker-soil{
-  top:14vh;
+.select>.container>.picker label{
+  
 }
 
 .select>.container>.picker view{
@@ -177,6 +202,9 @@
   line-height: 6vh;
   font-size: 32rpx;
   font-weight: bold;
+  width: 340rpx;
+  margin: auto;
+  display: inline-block;
 }
 
 .select>.container>button{
@@ -527,4 +555,26 @@
   border-bottom-right-radius: 12rpx;
   border: 2rpx solid;
   border-top: 0rpx;
+}
+
+
+/*地图参考点*/
+.canvas .flag{
+  position: absolute;
+  height: 60rpx;
+  width: 60rpx;
+  transform: translate(-50%,-100%);
+  /* border: 1px solid; */
+}
+
+.canvas .flag image{
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.canvas .border{
+  border: 10rpx double;
+  position: absolute;
+  box-sizing: border-box;
 }

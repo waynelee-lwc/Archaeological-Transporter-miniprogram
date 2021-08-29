@@ -2,7 +2,7 @@
 
 <!-- 版本标签 -->
 <view class="version-tag">
-  正式版  V1.2
+  正式版  V1.6
 </view>
 
 <!-- 画布 -->
@@ -16,20 +16,51 @@
 </view>
 
 <!-- 画布 -->
-<view class="canvas" bindtouchmove="touchmove" bindtouchstart="touchstart" bindtouchend="touchend">
+<view class="canvas" bindtouchmove="touchmove" bindtouchstart="touchstart" bindtouchend="touchend" bindtap="setTarget">
   <view class="map">
-    <block wx:for="{{pitspositions}}">
-      <view class="pit" style="top:{{50 + (item.y * pitsinterval - offsety) * sizerate}}rpx;left:{{50 + (item.x * pitsinterval - offsetx) * sizerate}}rpx;line-height:{{pitswidth * sizerate}}rpx;height:{{pitswidth * sizerate}}rpx;width:{{pitswidth * sizerate}}rpx">{{index + 1}}</view>
-    </block>
-    <!-- <view class="border" style="border:10rpx solid;position:absolute;top：30rpx;left30rpx;height:{{sizerate * pitsinterval * 9}}rpx;width:{{sizerate * pitsinterval * 7}}rpx"></view> -->
-  </view>
-  <view class="vehicle">
 
+  <!-- 土坑矩阵 -->
+    <block wx:for="{{pitspositions}}">
+      <view class="pit" style="top:{{(basey + flagPitIntervaly + item.y * pitsinterval) * sizerate - offsety}}px;left:{{(basex + flagPitIntervalx + item.x * pitsinterval) * sizerate - offsetx}}px;line-height:{{pitswidth * sizerate}}px;height:{{pitswidth * sizerate}}px;width:{{pitswidth * sizerate}}px">{{index + 1}}</view>
+    </block>
+  
+  <!-- 参考标记点 -->
+  <view class="flag" style="top: {{(basey) * sizerate - offsety}}px;left: {{(basex) * sizerate - offsetx}}px;"><image src="../imgs/location.png"/>
+    <view>({{0}},{{0}})</view>
   </view>
+
+  <view class="flag" style="top: {{(basey + pitsinterval * 9 + flagPitIntervaly * 2) * sizerate - offsety}}px; left: {{(basex) * sizerate - offsetx}}px;"><image src="../imgs/location.png"/>
+    <view>({{0}},{{pitsinterval * 9 + flagPitIntervaly * 2}})</view>
+  </view>
+
+  <view class="flag" style="top: {{(basey) * sizerate - offsety}}px;left: {{(basex + pitsinterval * 7 + flagPitIntervalx * 2) * sizerate - offsetx}}px"><image src="../imgs/location.png"/>
+    <view>({{pitsinterval * 7 + flagPitIntervaly * 2}},{{0}})</view>
+  </view>
+
+  <view class="flag" style="top: {{(basey + pitsinterval * 9 + flagPitIntervaly * 2) * sizerate - offsety}}px;left: {{(basex + pitsinterval * 7 + flagPitIntervalx * 2) * sizerate - offsetx}}px;"><image src="../imgs/location.png"/>
+    <view>({{pitsinterval * 7 + flagPitIntervaly * 2}},{{pitsinterval * 9 + flagPitIntervaly * 2}})</view>
+  </view>
+
+  <!-- 地图边框线 -->
+  <view class="border" style="height: {{(pitsinterval * 9 + flagPitIntervaly * 2 + 25) * sizerate}}px;width: {{(pitsinterval * 7 + flagPitIntervaly * 2 + 40) * sizerate}}px;top: {{(basey - 20) * sizerate - offsety}}px;left: {{(basex - 20) * sizerate - offsetx}}px;"></view>
+
+  <!-- 定位点 -->
+  <view class="target" style="position: absolute; height: 50rpx;width: 50rpx;top: {{targetPoint.realy * sizerate - offsety + basey * sizerate}}px;left: {{targetPoint.realx * sizerate - offsetx + basex * sizerate}}px;transform: translate(-50%,-100%);">
+        <image src="../imgs/target-position.png" style="display: block;height: 100%;width: 100%;" mode="scaleToFill" />
+        <view>{{'(' + targetPoint.realx + ',' + targetPoint.realy + ')'}}</view>
+    </view>  
+<!-- 载具位置-->
+  <view class="vehicle" style="position: absolute; height: 50rpx;width: 50rpx;top: {{vehicle.position.y * sizerate - offsety + basey * sizerate}}px;left: {{vehicle.position.x * sizerate - offsetx + basex * sizerate}}px;transform: translate(-50%,-100%);">
+        <image src="../imgs/legend-scheduling.png" style="display: block;height: 100%;width: 100%;" mode="scaleToFill" />
+        <view>{{'(' + vehicle.position.x + ',' + vehicle.position.y + ')'}}</view>
+  </view>  
+</view>
 </view>
 
+
+
 <!-- 图例 -->
-<view class="icons" style="bottom:{{onselect ? '40vh' : '2vh'}}">
+<view class="icons" style="bottom:{{onselect ? '46vh' : '2vh'}}">
   <view class="title">图例</view>
   <view class="legends-container">
     <block wx:for="{{legends}}">
@@ -41,7 +72,7 @@
  </view>
 </view>
 
-<!-- 页面缩略图 -->
+<!-- 工作页面底栏缩略图标 -->
 <view class="shorts" hidden="{{onshade || onselect}}">
   <!-- 缩略图 -->
   <block wx:for="{{pages}}">
@@ -90,30 +121,48 @@
   </view>
 </view>
 
-<!-- 叫车框 -->
+<!-- 呼叫框 -->
 <view class="select" hidden="{{currpage != 'selecting' || !onselect}}">
   <view class="hidebar" bindtap="hideselectform">
       <image src="../imgs/hide-icon.png"/>
   </view>
 
   <view class="container">
+  <!-- 目标点坐标选择 -->
+    <view class="target-pos">
+      <input type="number" value="{{targetPoint.realx}}" id="target-x" bindinput="changeTarget"  />
+      <input type="number" value="{{targetPoint.realy}}" id="target-y" bindinput="changeTarget"/>
+    </view>
+
+  <!-- 载具选择 -->
     <picker 
       mode="selector"
-      class="picker picker-position" 
-      range="{{positionResult.options}}"
-      bindchange="pickPosition"
-      >
-      <view>{{positionResult.options[positionIndex]}}</view>
+      class="picker picker-vehicle"
+      bindchange="pickVehicle"
+      range="{{vehicleResult.options}}"
+    >
+      <view>载具：{{vehicleResult.options[vehicleIndex]}}</view>
     </picker>
+
+  <!-- 坑位选择 -->
+    <picker 
+      mode="selector"
+      class="picker picker-position"
+      bindchange="pickPosition"
+      range="{{positionResult.options}}"
+    >
+      <view>坑位：{{positionResult.options[positionIndex]}}</view>
+    </picker>
+    <!-- 土壤类型选择 -->
     <picker 
       mode="selector"
       class="picker picker-soil"
       bindchange="pickSoil"
       range="{{soilResult.options}}"
     >
-      <view>{{soilResult.options[soilIndex]}}</view>
+      <view>土壤：{{soilResult.options[soilIndex]}}</view>
     </picker>
-    <button bindtap="queue">确认叫车</button>
+    <button type="primary" bindtap="submitSelection">确认叫车</button>
   </view>
 </view>
 

@@ -16,6 +16,6 @@ Page({
     })
   },
   onLoad:function(){
-    // this.navToTest();
+    // this.navToReal();
   }
 })

@@ -454,24 +454,43 @@ Page({
       'targetPoint.realy':ry
     })
   },
+  
   addsizerate:function(){ //增加地图缩放比例
 
+    let ofx = this.data.offsetx;
+    let ofy = this.data.offsety;
+
+    ofx /= this.data.sizerate;
+    ofy /= this.data.sizerate;
+
     let sizerate = Math.min(this.data.sizeratemax,this.data.sizerate + 0.25);
+
+    ofx *= sizerate;
+    ofy *= sizerate;
+
     this.setData({
       sizerate:sizerate,
-      offsetx:0,
-      offsety:0
+      offsetx:ofx,
+      offsety:ofy
     })
   },
   subsizerate:function(){ //减小地图缩放比例
-    let sizerate = Math.max(this.data.sizeraetmin,this.data.sizerate - 0.25);
 
-    let rate = sizerate / this.data.sizerate;;
+    let ofx = this.data.offsetx;
+    let ofy = this.data.offsety;
+
+    ofx /= this.data.sizerate;
+    ofy /= this.data.sizerate;
+
+    let sizerate = Math.min(this.data.sizeratemax,this.data.sizerate - 0.25);
+
+    ofx *= sizerate;
+    ofy *= sizerate;
 
     this.setData({
       sizerate:sizerate,
-      offsetx:0,
-      offsety:0
+      offsetx:ofx,
+      offsety:ofy
     })
   },
   tcpConnect:function(){ //建立tcp连接
